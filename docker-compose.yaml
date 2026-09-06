@@ -1,0 +1,69 @@
+services:
+  code-server-john:
+    # LinuxServer.io maintained code-server image, widely used by the community with good docs
+    # LinuxServer.io 维护的 code-server 镜像，社区广泛使用且文档完善
+    image: my-code-server:latest
+    container_name: code-server-john
+    environment:
+      # User ID and Group ID, default 1000 (user: abc)
+      # 用户ID与组ID，默认1000，用户：abc
+      - PUID=1000
+      - PGID=1000
+      # Timezone, adjust as needed, e.g. Asia/Shanghai
+      # 设置时区，可按需修改，如 Asia/Shanghai
+      - TZ=Asia/Shanghai
+      # Web UI password - please change it! Leave empty for no password
+      # 访问Web界面的密码，请务必修改！留空则无密码
+      - PASSWORD=your_password
+      # Optional: sudo password for running privileged commands in the terminal
+      # 可选：设置sudo密码，以便在终端中执行需要提权的命令
+      - SUDO_PASSWORD=your_sudo_password
+      # Optional: default workspace directory opened on start
+      # 可选：默认打开的工作区目录
+      - DEFAULT_WORKSPACE=/config/workspace
+      # Optional: domain for subdomain proxying
+      # 可选：通过域名访问代理
+      - PROXY_DOMAIN=john.example.com
+      # Initialize git user name and email at first start
+      # 初始化git用户名和邮箱配置
+      - GIT_USER_NAME=John
+      - GIT_USER_EMAIL=John@email.com
+    volumes:
+      # Persist config, settings, plugins and user data
+      # 持久化配置
+      - ./config/john:/config
+      # Mount the host SSH private key into the container
+      # 挂载宿主机中的私钥到容器中
+      - /home/ubuntu/.ssh/id_ed25519_john:/config/.ssh/id_ed25519:ro
+      # Shared dependency caches
+      # 共享依赖缓存
+      - ./cache/pnpm:/config/.local/share/pnpm/store
+      - ./cache/maven:/config/.m2/repository
+    ports:
+      # Map container port 8443 to host port 8443
+      # 将容器的8443端口映射到宿主机8443端口
+      - "8443:8443"
+    restart: unless-stopped
+  code-server-lucy:
+    image: my-code-server:latest
+    container_name: code-server-lucy
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+      - PASSWORD=your_password
+      - SUDO_PASSWORD=your_sudo_password
+      - DEFAULT_WORKSPACE=/config/workspace
+      - PROXY_DOMAIN=lucy.example.com
+      - GIT_USER_NAME=Lucy
+      - GIT_USER_EMAIL=Lucy@email.com
+    volumes:
+      - ./config/lucy:/config
+      - /home/ubuntu/.ssh/id_ed25519_lucy:/config/.ssh/id_ed25519:ro
+      - ./cache/pnpm:/config/.local/share/pnpm/store
+      - ./cache/maven:/config/.m2/repository
+    ports:
+      # Host ports must not collide across multiple containers
+      # 多容器端口不能重复
+      - "8444:8443"
+    restart: unless-stopped
